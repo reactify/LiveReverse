@@ -9,7 +9,10 @@
 #pragma once
 
 #include <stdlib.h>
+#include <assert.h>
 #include <vector>
+
+static const int MAX_BUFFER_SIZE = 176400;
 
 template <typename T>
 class LiveReverse {
@@ -17,11 +20,11 @@ public:
   
   //!
   LiveReverse( int channels, int windowSize ) : channels( channels ) {
-    bufferSize = windowSize * 2; // We use two windows in one buffer
     bInternal = (T **)malloc( channels * sizeof(T*) );
     for ( int i = 0; i < channels; ++i ) {
-      bInternal[i] = (T *)calloc( bufferSize, sizeof(T) );
+      bInternal[i] = (T *)calloc( MAX_BUFFER_SIZE, sizeof(T) );
     }
+    setWindowSize( windowSize );
     writePos = windowSize; // Start writing one window ahead
   }
   
@@ -31,6 +34,12 @@ public:
       free( bInternal[i] );
     }
     free( bInternal );
+  }
+  
+  //!
+  void setWindowSize( int windowSize ) {
+    bufferSize = windowSize * 2; // We use two windows in one buffer
+    assert( bufferSize < MAX_BUFFER_SIZE );
   }
   
   //!
