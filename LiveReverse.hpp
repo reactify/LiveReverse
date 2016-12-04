@@ -12,7 +12,7 @@
 #include <assert.h>
 #include <vector>
 
-static const int MAX_BUFFER_SIZE = 176400;
+static const int MAX_BUFFER_SIZE = 352800;
 
 template <typename T>
 class LiveReverse {
@@ -39,7 +39,7 @@ public:
   //!
   void setWindowSize( int windowSize ) {
     bufferSize = windowSize * 2; // We use two windows in one buffer
-    assert( bufferSize < MAX_BUFFER_SIZE );
+    assert( bufferSize <= MAX_BUFFER_SIZE );
   }
   
   //!
