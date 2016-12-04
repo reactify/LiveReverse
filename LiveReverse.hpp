@@ -11,15 +11,16 @@
 #include <stdlib.h>
 #include <vector>
 
+template <typename T>
 class LiveReverse {
 public:
   
   //!
-  LiveReverse( int channels, int windowSize ) : channels( channels ), windowSize( windowSize ) {
+  LiveReverse( int channels, int windowSize ) : channels( channels ) {
     bufferSize = windowSize * 2; // We use two windows in one buffer
-    bInternal = (float **)malloc( channels * sizeof(float*) );
+    bInternal = (T **)malloc( channels * sizeof(T*) );
     for ( int i = 0; i < channels; ++i ) {
-      bInternal[i] = (float *)calloc( bufferSize, sizeof(float) );
+      bInternal[i] = (T *)calloc( bufferSize, sizeof(T) );
     }
     writePos = windowSize; // Start writing one window ahead
   }
@@ -33,7 +34,7 @@ public:
   }
   
   //!
-  void process( float **const bIn, float **const bOut, int size ) {
+  inline void process( T **const bIn, T **const bOut, int size ) {
     for ( int j = 0; j < size; ++j ) {
       // Read position is one window behind write position
       // and we read from back to front ( reverse )
@@ -54,7 +55,6 @@ public:
 private:
   int channels;
   int writePos;
-  int windowSize;
   int bufferSize;
-  float** bInternal;
+  T** bInternal;
 };

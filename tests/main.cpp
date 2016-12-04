@@ -3,10 +3,10 @@
 //  LiveReverse
 //
 //  Created by Ragnar Hrafnkelsson on 01/12/2016.
-//  Copyright © 2016 reactify. All rights reserved.
+//  Copyright © 2016 Reactify. All rights reserved.
 //
 
-#include "LiveReverse.hpp"
+#include "../LiveReverse.hpp"
 
 int main(int argc, const char * argv[]) {
   
@@ -14,7 +14,7 @@ int main(int argc, const char * argv[]) {
   int windowSize = 512;
   int bufferSize = windowSize;
   
-  LiveReverse r( numChannels, windowSize );
+  LiveReverse<float> r( numChannels, windowSize );
   
   float **bIn  = (float **)alloca( numChannels * sizeof(float*) );
   float **bOut = (float **)alloca( numChannels * sizeof(float*) );
