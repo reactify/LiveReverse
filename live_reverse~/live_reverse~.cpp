@@ -7,7 +7,7 @@
 
 #include "ext.h"
 #include "z_dsp.h"
-#include "../../LiveReverse.hpp"
+#include "../LiveReverse.hpp"
 
 void *live_reverse_class;
 
