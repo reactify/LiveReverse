@@ -21,6 +21,8 @@ void live_reverse_free( t_live_reverse *x );
 void live_reverse_perform64( t_live_reverse *x, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam );
 void live_reverse_dsp64( t_live_reverse *x, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags );
 void live_reverse_assist( t_live_reverse *x, void *b, long m, long a, char *s );
+void live_reverse_assist( t_live_reverse *x, void *b, long m, long a, char *s );
+void live_reverse_set_window_size( t_live_reverse *x, double n );
 
 void ext_main(void *r)
 {
@@ -30,6 +32,7 @@ void ext_main(void *r)
 
 	class_addmethod( c, (method)live_reverse_dsp64, "dsp64", A_CANT, 0 );
 	class_addmethod( c, (method)live_reverse_assist,"assist",A_CANT,0 );
+  class_addmethod( c, (method)live_reverse_set_window_size, "ft1", A_FLOAT, 0 );
 
 	class_dspinit( c );	// must call this function for MSP object classes
 	class_register( CLASS_BOX, c );
@@ -41,17 +44,20 @@ void live_reverse_assist( t_live_reverse *x, void *b, long m, long a, char *s )
 	if ( m == ASSIST_INLET ) {
 		switch ( a ) {
 		case 0:
-			strcpy(s,"Specify cpu usage % here");
-			break;
-		}
-	}
+			strcpy( s, "Left signal inlet" ); break;
+    case 1:
+      strcpy( s, "Right signal inlet" ); break;
+    case 2:
+      strcpy( s, "Window size in seconds" ); break;
+    }
+  }
 }
 
 void *live_reverse_new( double val )
 {
 	t_live_reverse *x = (t_live_reverse *)object_alloc((t_class*)live_reverse_class);
 	
-  // intin( x, 1 ); // TODO: Setter for buffer length
+  floatin( x, 1 );
 	
 	dsp_setup( (t_pxobject *)x, 2 );
 	outlet_new( x, "signal" );
@@ -68,6 +74,11 @@ void live_reverse_free( t_live_reverse *x )
 	dsp_free( (t_pxobject *)x );
 }
 
+void live_reverse_set_window_size( t_live_reverse *x, double n ) {
+  long samples = (long)( fabs(n) * sys_getsr() );
+  x->external->setWindowSize( samples );
+}
+
 void live_reverse_perform64( t_live_reverse *x, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam )
 {
   assert( numins  >= 2 );
@@ -75,17 +86,13 @@ void live_reverse_perform64( t_live_reverse *x, t_object *dsp64, double **ins, l
   
   long numBytes = sampleframes * sizeof(double);
   
-  double **bTemp = (double **)alloca( numins * sizeof(double*) );
+  double **bIn = (double **)alloca( numins * sizeof(double*) );
   for ( int i = 0; i < numins; ++i ) {
-    bTemp[i] = (double *)alloca( numBytes );
-    memcpy( bTemp[i], ins[i], numBytes );
+    bIn[i] = (double *)alloca( numBytes );
+    memcpy( bIn[i], ins[i], numBytes );
   }
   
-	x->external->process( bTemp, bTemp, sampleframes );
-  
-  for ( int i = 0; i < numouts; ++i ) {
-    memcpy( outs[i], bTemp[i], numBytes );
-  }
+	x->external->process( bIn, outs, sampleframes );
 }
 
 void live_reverse_dsp64( t_live_reverse *x, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags )
